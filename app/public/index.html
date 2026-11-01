@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attendance Manager</title>
+<style>
+  :root { --bg:#f5f6fa; --card:#fff; --text:#1f2430; --muted:#6b7280; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --border:#e5e7eb; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--text); }
+  header { background:var(--primary); color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:18px; margin:0; }
+  main { max-width:960px; margin:24px auto; padding:0 16px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
+  nav { display:flex; gap:8px; margin-bottom:16px; }
+  nav button { background:var(--card); color:var(--text); border:1px solid var(--border); }
+  nav button.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+  input, select, button { padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:14px; }
+  button { background:var(--primary); color:#fff; border:none; cursor:pointer; }
+  button.secondary { background:#e5e7eb; color:var(--text); }
+  button.danger { background:var(--danger); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-weight:600; }
+  tr.low { background:#fef2f2; }
+  .low-text { color:var(--danger); font-weight:600; }
+  .msg { padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:14px; }
+  .msg.err { background:#fee2e2; color:#991b1b; } .msg.ok { background:#dcfce7; color:#166534; }
+  .hidden { display:none; }
+  #login { max-width:340px; margin:80px auto; }
+  #login input { width:100%; margin-bottom:10px; }
+  .status label { margin-right:10px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Student Attendance Manager</h1>
+  <div id="userbox" class="hidden"><span id="uname"></span> <button class="secondary" onclick="logout()">Logout</button></div>
+</header>
+
+<div id="login" class="card">
+  <h2>Teacher Login</h2>
+  <div id="loginMsg"></div>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()" style="width:100%">Login</button>
+</div>
+
+<main id="app" class="hidden">
+  <nav>
+    <button data-tab="students" class="active">Students</button>
+    <button data-tab="attendance">Mark Attendance</button>
+    <button data-tab="reports">Reports</button>
+  </nav>
+  <div id="msg"></div>
+
+  <section id="tab-students" class="card">
+    <div class="row">
+      <input id="s_roll" placeholder="Roll No"><input id="s_name" placeholder="Name"><input id="s_class" placeholder="Class">
+      <button onclick="addStudent()">Add Student</button>
+    </div>
+    <table><thead><tr><th>Roll No</th><th>Name</th><th>Class</th><th></th></tr></thead><tbody id="studentRows"></tbody></table>
+  </section>
+
+  <section id="tab-attendance" class="card hidden">
+    <div class="row">
+      <select id="a_subject"></select>
+      <input id="a_newSubject" placeholder="New subject"><button class="secondary" onclick="addSubject()">Add Subject</button>
+    </div>
+    <div class="row">
+      <input id="a_date" type="date"><button onclick="loadAttendance()">Load</button>
+      <button class="secondary" onclick="markAll('present')">All Present</button>
+      <button onclick="saveAttendance()">Save Attendance</button>
+    </div>
+    <table><thead><tr><th>Roll No</th><th>Name</th><th>Status</th></tr></thead><tbody id="attRows"></tbody></table>
+  </section>
+
+  <section id="tab-reports" class="card hidden">
+    <div class="row">
+      <select id="r_subject"></select>
+      <input id="r_from" type="date"><input id="r_to" type="date">
+      <button onclick="loadReport()">Generate</button>
+      <button class="secondary" onclick="exportCsv()">Export CSV</button>
+    </div>
+    <p id="threshold" style="color:var(--muted)"></p>
+    <table><thead><tr><th>Roll No</th><th>Name</th><th>Present</th><th>Late</th><th>Absent</th><th>Total</th><th>%</th></tr></thead><tbody id="reportRows"></tbody></table>
+  </section>
+</main>
+
+<script>
+let token = localStorage.getItem('token');
+let attendanceData = [];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(path, opts = {}) {
+  const res = await fetch('/api' + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token, ...(opts.headers || {}) },
+  });
+  if (res.status === 401 && path !== '/auth/login') { logout(); throw new Error('Session expired'); }
+  if (res.status === 204) return null;
+  const data = res.headers.get('content-type')?.includes('json') ? await res.json() : res;
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function flash(text, ok = true) {
+  $('msg').innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${esc(text)}</div>`;
+  setTimeout(() => ($('msg').innerHTML = ''), 4000);
+}
+const guard = (fn) => async (...a) => { try { await fn(...a); } catch (e) { flash(e.message, false); } };
+
+/* ---- Auth ---- */
+async function login() {
+  try {
+    const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email: $('email').value, password: $('password').value }) });
+    token = data.token; localStorage.setItem('token', token); localStorage.setItem('name', data.name);
+    showApp();
+  } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+}
+function logout() { localStorage.clear(); token = null; location.reload(); }
+function showApp() {
+  $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+  $('userbox').classList.remove('hidden'); $('uname').textContent = localStorage.getItem('name') || '';
+  $('a_date').value = new Date().toISOString().slice(0, 10);
+  loadStudents(); loadSubjects();
+}
+
+/* ---- Tabs ---- */
+document.querySelectorAll('nav button').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x === b));
+  ['students', 'attendance', 'reports'].forEach((t) => $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab));
+});
+
+/* ---- Students ---- */
+const loadStudents = guard(async () => {
+  const rows = await api('/students');
+  $('studentRows').innerHTML = rows.map((s) => `<tr><td>${esc(s.roll_no)}</td><td>${esc(s.name)}</td><td>${esc(s.class_name)}</td>
+    <td><button class="danger" onclick="delStudent(${s.id})">Delete</button></td></tr>`).join('');
+});
+const addStudent = guard(async () => {
+  await api('/students', { method: 'POST', body: JSON.stringify({ roll_no: $('s_roll').value, name: $('s_name').value, class_name: $('s_class').value }) });
+  ['s_roll', 's_name', 's_class'].forEach((i) => ($(i).value = ''));
+  flash('Student added'); loadStudents();
+});
+const delStudent = guard(async (id) => {
+  if (!confirm('Delete this student and their attendance records?')) return;
+  await api('/students/' + id, { method: 'DELETE' }); loadStudents();
+});
+
+/* ---- Subjects ---- */
+const loadSubjects = guard(async () => {
+  const subjects = await api('/subjects');
+  const opts = subjects.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  $('a_subject').innerHTML = opts;
+  $('r_subject').innerHTML = '<option value="">All subjects</option>' + opts;
+});
+const addSubject = guard(async () => {
+  await api('/subjects', { method: 'POST', body: JSON.stringify({ name: $('a_newSubject').value }) });
+  $('a_newSubject').value = ''; loadSubjects();
+});
+
+/* ---- Attendance ---- */
+const loadAttendance = guard(async () => {
+  const subject = $('a_subject').value, date = $('a_date').value;
+  if (!subject) return flash('Add and select a subject first', false);
+  attendanceData = await api(`/attendance?subject_id=${subject}&date=${date}`);
+  $('attRows').innerHTML = attendanceData.map((r, i) => `<tr><td>${esc(r.roll_no)}</td><td>${esc(r.name)}</td>
+    <td class="status">${['present', 'late', 'absent'].map((st) =>
+      `<label><input type="radio" name="st${i}" value="${st}" ${r.status === st ? 'checked' : ''}> ${st}</label>`).join('')}</td></tr>`).join('');
+});
+function markAll(status) { document.querySelectorAll(`#attRows input[value="${status}"]`).forEach((r) => (r.checked = true)); }
+const saveAttendance = guard(async () => {
+  const records = attendanceData.map((r, i) => {
+    const c = document.querySelector(`input[name="st${i}"]:checked`);
+    return c ? { student_id: r.student_id, status: c.value } : null;
+  }).filter(Boolean);
+  if (!records.length) return flash('Mark at least one student', false);
+  const out = await api('/attendance', { method: 'POST', body: JSON.stringify({ subject_id: $('a_subject').value, date: $('a_date').value, records }) });
+  flash(`Saved ${out.saved} records`);
+});
+
+/* ---- Reports ---- */
+function reportQuery() {
+  const p = new URLSearchParams();
+  if ($('r_subject').value) p.set('subject_id', $('r_subject').value);
+  if ($('r_from').value) p.set('from', $('r_from').value);
+  if ($('r_to').value) p.set('to', $('r_to').value);
+  return p.toString();
+}
+const loadReport = guard(async () => {
+  const data = await api('/reports/students?' + reportQuery());
+  $('threshold').textContent = `Students below ${data.threshold}% are highlighted in red.`;
+  $('reportRows').innerHTML = data.students.map((s) => `<tr class="${s.low ? 'low' : ''}">
+    <td>${esc(s.roll_no)}</td><td>${esc(s.name)}</td><td>${s.present}</td><td>${s.late}</td><td>${s.absent}</td><td>${s.total}</td>
+    <td class="${s.low ? 'low-text' : ''}">${s.percentage === null ? 'N/A' : s.percentage + '%'}</td></tr>`).join('');
+});
+const exportCsv = guard(async () => {
+  const res = await api('/reports/export.csv?' + reportQuery());
+  const url = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement('a'), { href: url, download: 'attendance-report.csv' });
+  a.click(); URL.revokeObjectURL(url);
+});
+
+if (token) showApp();
+</script>
+</body>
+</html>
