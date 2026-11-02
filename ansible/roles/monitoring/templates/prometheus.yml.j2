@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alert_rules.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["127.0.0.1:9090"]
+
+  # Server metrics (CPU, memory, disk) from node_exporter on every app server.
+  # Servers are found automatically through the AWS API by their Role=app tag,
+  # so new servers created by Auto Scaling are picked up without any change.
+  - job_name: node
+    ec2_sd_configs:
+      - region: {{ region }}
+        port: 9100
+        filters:
+          - name: tag:Role
+            values: [app]
+          - name: instance-state-name
+            values: [running]
+    relabel_configs:
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_availability_zone]
+        target_label: az
+
+  # Application metrics (requests, latency, errors, attendance records) from the app
+  - job_name: attendance-app
+    metrics_path: /metrics
+    ec2_sd_configs:
+      - region: {{ region }}
+        port: 3000
+        filters:
+          - name: tag:Role
+            values: [app]
+          - name: instance-state-name
+            values: [running]
+    relabel_configs:
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_availability_zone]
+        target_label: az

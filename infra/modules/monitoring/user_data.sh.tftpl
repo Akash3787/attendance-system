@@ -1,0 +1,12 @@
+#!/bin/bash
+# First-boot bootstrap: Ansible installs and configures Prometheus and Grafana.
+set -euo pipefail
+
+dnf install -y ansible-core
+
+mkdir -p /opt/ansible
+aws s3 sync "s3://${artifacts_bucket}/ansible/" /opt/ansible/ --exclude vars.yml --region "${region}"
+aws s3 cp "s3://${artifacts_bucket}/config/monitoring-vars.yml" /opt/ansible/monitoring-vars.yml --region "${region}"
+
+cd /opt/ansible
+ansible-playbook -i localhost, -c local monitoring.yml -e @monitoring-vars.yml

@@ -1,0 +1,21 @@
+[Unit]
+Description=Prometheus
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm -f prometheus
+ExecStart=/usr/bin/docker run --rm --name prometheus --network host \
+  -v /etc/prometheus:/etc/prometheus:ro \
+  -v /var/lib/prometheus:/prometheus \
+  {{ prometheus_image }} \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/prometheus \
+  --storage.tsdb.retention.time=7d \
+  --web.listen-address=127.0.0.1:9090
+ExecStop=/usr/bin/docker stop prometheus
+
+[Install]
+WantedBy=multi-user.target

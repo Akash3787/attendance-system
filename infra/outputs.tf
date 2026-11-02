@@ -52,3 +52,19 @@ output "artifacts_bucket" {
 output "ansible_document" {
   value = module.config_management.document_name
 }
+
+output "grafana_admin_password" {
+  description = "Show with: terraform output -raw grafana_admin_password"
+  value       = module.monitoring.grafana_admin_password
+  sensitive   = true
+}
+
+output "grafana_port_forward_command" {
+  description = "Run this, then open http://localhost:3000"
+  value       = "aws ssm start-session --target ${module.monitoring.instance_id} --region ${var.region} --document-name AWS-StartPortForwardingSession --parameters portNumber=3000,localPortNumber=3000"
+}
+
+output "prometheus_port_forward_command" {
+  description = "Run this, then open http://localhost:9090"
+  value       = "aws ssm start-session --target ${module.monitoring.instance_id} --region ${var.region} --document-name AWS-StartPortForwardingSession --parameters portNumber=9090,localPortNumber=9090"
+}

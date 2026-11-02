@@ -120,3 +120,14 @@ module "compute" {
   # The playbook settings file must exist before servers boot
   depends_on = [module.config_management]
 }
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  name                 = var.project
+  region               = var.region
+  subnet_id            = module.network.public_subnet_ids[0]
+  monitoring_sg_id     = module.network.monitoring_sg_id
+  artifacts_bucket     = data.aws_s3_bucket.artifacts.id
+  artifacts_bucket_arn = data.aws_s3_bucket.artifacts.arn
+}

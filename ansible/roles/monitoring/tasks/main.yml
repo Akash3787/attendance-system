@@ -1,0 +1,114 @@
+---
+# Prometheus collects metrics from the app servers; Grafana draws dashboards.
+# Both listen on localhost only: reach them with an SSM port-forward session.
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "0755"
+  loop:
+    - { path: /etc/prometheus, owner: "0", group: "0" }
+    - { path: /var/lib/prometheus, owner: "65534", group: "65534" }
+    - { path: /etc/grafana, owner: "0", group: "0" }
+    - { path: /etc/grafana/provisioning, owner: "0", group: "0" }
+    - { path: /etc/grafana/provisioning/datasources, owner: "0", group: "0" }
+    - { path: /etc/grafana/provisioning/dashboards, owner: "0", group: "0" }
+    - { path: /var/lib/grafana, owner: "472", group: "0" }
+    - { path: /var/lib/grafana/dashboards, owner: "472", group: "0" }
+
+- name: Prometheus configuration
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    mode: "0644"
+  notify: Restart prometheus
+
+- name: Prometheus alert rules
+  ansible.builtin.copy:
+    src: alert_rules.yml
+    dest: /etc/prometheus/alert_rules.yml
+    mode: "0644"
+  notify: Restart prometheus
+
+- name: Grafana data source
+  ansible.builtin.copy:
+    src: datasource.yml
+    dest: /etc/grafana/provisioning/datasources/datasource.yml
+    mode: "0644"
+  notify: Restart grafana
+
+- name: Grafana dashboard provider
+  ansible.builtin.copy:
+    src: dashboard-provider.yml
+    dest: /etc/grafana/provisioning/dashboards/provider.yml
+    mode: "0644"
+  notify: Restart grafana
+
+- name: Grafana dashboard
+  ansible.builtin.copy:
+    src: attendance-overview.json
+    dest: /var/lib/grafana/dashboards/attendance-overview.json
+    owner: "472"
+    group: "0"
+    mode: "0644"
+
+- name: Read Grafana admin secret
+  ansible.builtin.command: >
+    aws secretsmanager get-secret-value --region {{ region }}
+    --secret-id {{ grafana_secret_arn }} --query SecretString --output text
+  register: grafana_secret_raw
+  changed_when: false
+  no_log: true
+
+- name: Parse Grafana secret
+  ansible.builtin.set_fact:
+    grafana_cfg: "{{ grafana_secret_raw.stdout | from_json }}"
+  no_log: true
+
+- name: Grafana environment file
+  ansible.builtin.template:
+    src: grafana.env.j2
+    dest: /etc/grafana/grafana.env
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Restart grafana
+
+- name: Pull Prometheus image
+  ansible.builtin.command: "docker pull {{ prometheus_image }}"
+  register: prometheus_pull
+  changed_when: "'Downloaded newer image' in prometheus_pull.stdout"
+  notify: Restart prometheus
+
+- name: Pull Grafana image
+  ansible.builtin.command: "docker pull {{ grafana_image }}"
+  register: grafana_pull
+  changed_when: "'Downloaded newer image' in grafana_pull.stdout"
+  notify: Restart grafana
+
+- name: Install Prometheus unit
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: "0644"
+  notify: Restart prometheus
+
+- name: Install Grafana unit
+  ansible.builtin.template:
+    src: grafana.service.j2
+    dest: /etc/systemd/system/grafana.service
+    mode: "0644"
+  notify: Restart grafana
+
+- name: Enable and start Prometheus and Grafana
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop:
+    - prometheus
+    - grafana

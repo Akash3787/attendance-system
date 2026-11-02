@@ -1,0 +1,8 @@
+---
+# Configures the monitoring server (Prometheus + Grafana).
+- name: Configure monitoring server
+  hosts: all
+  become: false   # already running as root
+  roles:
+    - common
+    - monitoring

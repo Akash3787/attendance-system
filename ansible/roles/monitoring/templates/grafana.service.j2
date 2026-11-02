@@ -1,0 +1,18 @@
+[Unit]
+Description=Grafana
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm -f grafana
+ExecStart=/usr/bin/docker run --rm --name grafana --network host \
+  --env-file /etc/grafana/grafana.env \
+  -v /etc/grafana/provisioning:/etc/grafana/provisioning:ro \
+  -v /var/lib/grafana:/var/lib/grafana \
+  {{ grafana_image }}
+ExecStop=/usr/bin/docker stop grafana
+
+[Install]
+WantedBy=multi-user.target

@@ -90,3 +90,68 @@ resource "aws_vpc_security_group_ingress_rule" "db_from_app" {
   from_port                    = 5432
   to_port                      = 5432
 }
+
+# ---- Monitoring server (Prometheus + Grafana) ----
+# No inbound rules at all: dashboards are reached through an SSM port-forward
+# session, so no monitoring port is ever exposed to the internet.
+resource "aws_security_group" "monitoring" {
+  name        = "${var.name}-monitoring-sg"
+  description = "Monitoring server"
+  vpc_id      = aws_vpc.main.id
+
+  tags = { Name = "${var.name}-monitoring-sg" }
+}
+
+resource "aws_vpc_security_group_egress_rule" "monitoring_https_out" {
+  security_group_id = aws_security_group.monitoring.id
+  description       = "HTTPS out (AWS APIs, container images)"
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "monitoring_http_out" {
+  security_group_id = aws_security_group.monitoring.id
+  description       = "HTTP out (OS package repositories)"
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "tcp"
+  from_port         = 80
+  to_port           = 80
+}
+
+resource "aws_vpc_security_group_egress_rule" "monitoring_to_node_exporter" {
+  security_group_id            = aws_security_group.monitoring.id
+  description                  = "Scrape node_exporter on app servers"
+  referenced_security_group_id = aws_security_group.app.id
+  ip_protocol                  = "tcp"
+  from_port                    = 9100
+  to_port                      = 9100
+}
+
+resource "aws_vpc_security_group_egress_rule" "monitoring_to_app_metrics" {
+  security_group_id            = aws_security_group.monitoring.id
+  description                  = "Scrape app metrics"
+  referenced_security_group_id = aws_security_group.app.id
+  ip_protocol                  = "tcp"
+  from_port                    = var.app_port
+  to_port                      = var.app_port
+}
+
+resource "aws_vpc_security_group_ingress_rule" "app_node_exporter_from_monitoring" {
+  security_group_id            = aws_security_group.app.id
+  description                  = "node_exporter from the monitoring server only"
+  referenced_security_group_id = aws_security_group.monitoring.id
+  ip_protocol                  = "tcp"
+  from_port                    = 9100
+  to_port                      = 9100
+}
+
+resource "aws_vpc_security_group_ingress_rule" "app_metrics_from_monitoring" {
+  security_group_id            = aws_security_group.app.id
+  description                  = "App metrics from the monitoring server only"
+  referenced_security_group_id = aws_security_group.monitoring.id
+  ip_protocol                  = "tcp"
+  from_port                    = var.app_port
+  to_port                      = var.app_port
+}
