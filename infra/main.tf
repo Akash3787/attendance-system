@@ -72,3 +72,31 @@ module "iam" {
     module.app_secrets.secret_arn,
   ]
 }
+
+module "alb" {
+  source = "./modules/alb"
+
+  name              = var.project
+  vpc_id            = module.network.vpc_id
+  public_subnet_ids = module.network.public_subnet_ids
+  alb_sg_id         = module.network.alb_sg_id
+}
+
+module "compute" {
+  source = "./modules/compute"
+
+  name                  = var.project
+  region                = var.region
+  subnet_ids            = module.network.public_subnet_ids
+  app_sg_id             = module.network.app_sg_id
+  instance_profile_name = module.iam.instance_profile_name
+  target_group_arn      = module.alb.target_group_arn
+  ecr_repository_url    = data.aws_ecr_repository.app.repository_url
+  db_secret_arn         = module.database.secret_arn
+  app_secret_arn        = module.app_secrets.secret_arn
+
+  instance_type = var.instance_type
+  min_size      = var.asg_min
+  desired_size  = var.asg_desired
+  max_size      = var.asg_max
+}

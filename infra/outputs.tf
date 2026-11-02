@@ -39,3 +39,8 @@ output "admin_password" {
   value       = module.app_secrets.admin_password
   sensitive   = true
 }
+
+output "app_url" {
+  description = "Open this in a browser once the instances are healthy"
+  value       = "http://${module.alb.dns_name}"
+}

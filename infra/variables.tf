@@ -33,3 +33,24 @@ variable "admin_email" {
   type        = string
   default     = "teacher@college.edu"
 }
+
+variable "instance_type" {
+  description = "EC2 instance size for app servers"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "asg_min" {
+  type    = number
+  default = 1
+}
+
+variable "asg_desired" {
+  type    = number
+  default = 2
+}
+
+variable "asg_max" {
+  type    = number
+  default = 3
+}
