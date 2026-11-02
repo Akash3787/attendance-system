@@ -1,0 +1,70 @@
+name: CI
+
+# Runs on every pull request and every push to main.
+# No AWS credentials are needed here: these are checks only.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-app:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  ansible-check:
+    name: Ansible syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ansible
+        run: pip install ansible-core
+      - name: Check playbook syntax
+        working-directory: ansible
+        run: |
+          printf 'region: x\necr_repository_url: 1.dkr.ecr.x.amazonaws.com/y\ndb_secret_arn: a\napp_secret_arn: b\n' > /tmp/vars.yml
+          ansible-playbook -i localhost, -c local site.yml -e @/tmp/vars.yml --syntax-check
+
+  terraform-check:
+    name: Terraform format and validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+      - name: Check formatting
+        run: terraform fmt -check -recursive infra
+      - name: Validate both stacks
+        run: |
+          for dir in infra infra/bootstrap; do
+            terraform -chdir=$dir init -backend=false -input=false
+            terraform -chdir=$dir validate
+          done
+
+  security-scan:
+    name: Security scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan dependencies, secrets and infrastructure code
+        run: |
+          docker run --rm -v "$PWD:/work" aquasec/trivy:0.58.0 fs \
+            --scanners vuln,secret,misconfig \
+            --severity HIGH,CRITICAL \
+            --exit-code 0 /work
