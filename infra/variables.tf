@@ -15,3 +15,21 @@ variable "vpc_cidr" {
   type        = string
   default     = "10.0.0.0/16"
 }
+
+variable "db_instance_class" {
+  description = "RDS instance size (use db.t3.micro if db.t4g.micro is not allowed)"
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "ecr_repository_name" {
+  description = "ECR repository created by infra/bootstrap"
+  type        = string
+  default     = "attendance-app"
+}
+
+variable "admin_email" {
+  description = "Email of the first teacher login"
+  type        = string
+  default     = "teacher@college.edu"
+}

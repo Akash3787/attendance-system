@@ -2,7 +2,12 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// RDS PostgreSQL 15+ requires TLS. Set DB_SSL=true on AWS; locally it stays off.
+const useSsl = process.env.DB_SSL === 'true';
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: useSsl ? { rejectUnauthorized: false } : false,
+});
 
 async function init(retries = 15) {
   const schema = fs.readFileSync(path.join(__dirname, '..', 'db', 'schema.sql'), 'utf8');

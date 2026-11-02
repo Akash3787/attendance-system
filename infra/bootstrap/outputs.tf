@@ -6,3 +6,8 @@ output "state_bucket_name" {
 output "region" {
   value = var.region
 }
+
+output "ecr_repository_url" {
+  description = "Where to push the Docker image"
+  value       = aws_ecr_repository.app.repository_url
+}

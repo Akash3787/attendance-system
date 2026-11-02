@@ -14,3 +14,9 @@ variable "monthly_budget_usd" {
   type        = number
   default     = 10
 }
+
+variable "ecr_repository_name" {
+  description = "Name of the ECR repository for the app image"
+  type        = string
+  default     = "attendance-app"
+}
