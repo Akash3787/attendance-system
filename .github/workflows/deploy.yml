@@ -17,12 +17,10 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  id-token: write # needed to log in to AWS with OIDC
   contents: read
 
 env:
   AWS_REGION: ap-southeast-2
-  AWS_ROLE_ARN: arn:aws:iam::428032596088:role/attendance-github-actions
   ECR_REPOSITORY: attendance-app
   ARTIFACTS_BUCKET: attendance-artifacts-428032596088-ap-southeast-2
 
@@ -50,10 +48,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to AWS (OIDC, no stored keys)
+      - name: Log in to AWS (least-privilege deploy user)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to ECR

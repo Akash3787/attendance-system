@@ -17,7 +17,7 @@ output "artifacts_bucket_name" {
   value       = aws_s3_bucket.artifacts.id
 }
 
-output "github_actions_role_arn" {
-  description = "Role the GitHub Actions workflow assumes"
-  value       = aws_iam_role.github_actions.arn
+output "github_actions_user" {
+  description = "IAM user used by the GitHub Actions deploy workflow"
+  value       = aws_iam_user.github_actions.name
 }

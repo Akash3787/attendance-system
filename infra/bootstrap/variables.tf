@@ -20,9 +20,3 @@ variable "ecr_repository_name" {
   type        = string
   default     = "attendance-app"
 }
-
-variable "github_repo" {
-  description = "GitHub repository allowed to deploy, as owner/name"
-  type        = string
-  default     = "Akash3787/attendance-system"
-}
