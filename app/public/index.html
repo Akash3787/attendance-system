@@ -2,187 +2,1902 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Attendance Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduAttend — Student Attendance Management System</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f5f6fa; --card:#fff; --text:#1f2430; --muted:#6b7280; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --border:#e5e7eb; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--text); }
-  header { background:var(--primary); color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; }
-  header h1 { font-size:18px; margin:0; }
-  main { max-width:960px; margin:24px auto; padding:0 16px; }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
-  nav { display:flex; gap:8px; margin-bottom:16px; }
-  nav button { background:var(--card); color:var(--text); border:1px solid var(--border); }
-  nav button.active { background:var(--primary); color:#fff; border-color:var(--primary); }
-  input, select, button { padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:14px; }
-  button { background:var(--primary); color:#fff; border:none; cursor:pointer; }
-  button.secondary { background:#e5e7eb; color:var(--text); }
-  button.danger { background:var(--danger); }
-  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--border); }
-  th { color:var(--muted); font-weight:600; }
-  tr.low { background:#fef2f2; }
-  .low-text { color:var(--danger); font-weight:600; }
-  .msg { padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:14px; }
-  .msg.err { background:#fee2e2; color:#991b1b; } .msg.ok { background:#dcfce7; color:#166534; }
-  .hidden { display:none; }
-  #login { max-width:340px; margin:80px auto; }
-  #login input { width:100%; margin-bottom:10px; }
-  .status label { margin-right:10px; cursor:pointer; }
+  :root {
+    --bg-base: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f1f5f9;
+    --border: #e2e8f0;
+    --border-hover: #cbd5e1;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-subtle: #94a3b8;
+    
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --primary-text: #3730a3;
+    
+    --success: #10b981;
+    --success-light: #ecfdf5;
+    --success-border: #a7f3d0;
+    --success-text: #065f46;
+    
+    --warning: #f59e0b;
+    --warning-light: #fffbeb;
+    --warning-border: #fde68a;
+    --warning-text: #92400e;
+    
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
+    --danger-border: #fecaca;
+    --danger-text: #991b1b;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: var(--font-body);
+    background-color: var(--bg-base);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.07) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.06) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- Header & Navbar ---- */
+  header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 12px 24px;
+    transition: all 0.2s ease;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--text-main);
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+  }
+
+  .brand-logo svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .brand-text h1 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    line-height: 1.2;
+  }
+
+  .brand-text .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: var(--primary-light);
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .health-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .health-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--success);
+    box-shadow: 0 0 0 2px var(--success-border);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.9); }
+  }
+
+  #userbox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px 4px 6px;
+    border-radius: 9999px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  #uname {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  /* ---- Main Container ---- */
+  main {
+    max-width: 1200px;
+    width: 100%;
+    margin: 28px auto;
+    padding: 0 24px;
+    flex: 1;
+  }
+
+  /* ---- Navigation Bar (Tabs) ---- */
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    backdrop-filter: blur(8px);
+    overflow-x: auto;
+  }
+
+  nav button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+
+  nav button svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+  }
+
+  nav button:hover {
+    color: var(--text-main);
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  nav button.active {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  }
+
+  nav button.active svg {
+    transform: scale(1.08);
+  }
+
+  /* ---- Stat Cards Strip ---- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-icon svg { width: 24px; height: 24px; }
+  .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+  .stat-icon.green { background: var(--success-light); color: var(--success); }
+  .stat-icon.amber { background: var(--warning-light); color: var(--warning); }
+  .stat-icon.rose { background: var(--danger-light); color: var(--danger); }
+
+  .stat-info { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+  .stat-value { font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
+
+  /* ---- Card Component ---- */
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title svg {
+    color: var(--primary);
+    width: 22px;
+    height: 22px;
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  /* ---- Form Controls & Buttons ---- */
+  .row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+
+  .input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-group svg {
+    position: absolute;
+    left: 12px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-subtle);
+    pointer-events: none;
+  }
+
+  .input-group input {
+    padding-left: 36px;
+  }
+
+  input, select, button {
+    font-family: var(--font-body);
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  input, select {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  }
+
+  input::placeholder {
+    color: var(--text-subtle);
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--primary);
+    color: #ffffff;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  button:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+    transform: translateY(-1px);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button.secondary {
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  button.secondary:hover {
+    background: var(--bg-subtle);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  button.danger {
+    background: var(--danger-light);
+    color: var(--danger-text);
+    border: 1px solid var(--danger-border);
+  }
+
+  button.danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.15);
+  }
+
+  button.success-action {
+    background: var(--success);
+    color: white;
+  }
+  button.success-action:hover {
+    background: #059669;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* ---- Data Tables ---- */
+  .table-container {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  thead {
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 12px 16px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s ease;
+  }
+
+  tbody tr:hover {
+    background-color: rgba(241, 245, 249, 0.6);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Roll No Monospace Badge */
+  .roll-badge {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    display: inline-block;
+  }
+
+  .class-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+  }
+
+  .student-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .student-initials {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #3730a3;
+    font-weight: 700;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---- Interactive Attendance Status Segmented Radios ---- */
+  .status-segmented-group {
+    display: inline-flex;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .status-segmented-option {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .status-segmented-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .status-pill-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: calc(var(--radius-md) - 3px);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+  }
+
+  .status-segmented-option:hover .status-pill-label {
+    color: var(--text-main);
+  }
+
+  /* Present Active */
+  .status-segmented-option input[value="present"]:checked + .status-pill-label {
+    background: var(--success);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+  }
+
+  /* Late Active */
+  .status-segmented-option input[value="late"]:checked + .status-pill-label {
+    background: var(--warning);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+  }
+
+  /* Absent Active */
+  .status-segmented-option input[value="absent"]:checked + .status-pill-label {
+    background: var(--danger);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+  }
+
+  /* Reports Highlights & Status */
+  tr.low {
+    background: #fff1f2 !important;
+  }
+
+  .percentage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 13px;
+    background: var(--success-light);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
+  }
+
+  .percentage-badge.low {
+    background: var(--danger-light);
+    color: var(--danger-text);
+    border-color: var(--danger-border);
+    animation: alert-pulse 2s infinite;
+  }
+
+  @keyframes alert-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+    50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
+  }
+
+  .count-pill {
+    font-weight: 600;
+    font-size: 13px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+  }
+  .count-present { background: var(--success-light); color: var(--success-text); }
+  .count-late { background: var(--warning-light); color: var(--warning-text); }
+  .count-absent { background: var(--danger-light); color: var(--danger-text); }
+
+  /* Attendance Progress Toolbar */
+  .attendance-tracker-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--bg-subtle);
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .tracker-counters {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .progress-track {
+    width: 140px;
+    height: 8px;
+    background: #cbd5e1;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #10b981);
+    transition: width 0.3s ease;
+  }
+
+  /* ---- Toast Notification System ---- */
+  #toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+  }
+
+  .toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xl);
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 280px;
+    max-width: 420px;
+    transform: translateY(16px);
+    opacity: 0;
+    animation: toast-in 0.25s forwards cubic-bezier(0.16, 1, 0.3, 1);
+    border-left: 4px solid var(--primary);
+  }
+
+  .toast.ok { border-left-color: var(--success); }
+  .toast.err { border-left-color: var(--danger); }
+
+  .toast-icon svg { width: 20px; height: 20px; }
+  .toast.ok .toast-icon { color: var(--success); }
+  .toast.err .toast-icon { color: var(--danger); }
+
+  @keyframes toast-in {
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes toast-out {
+    to { transform: translateY(-10px); opacity: 0; }
+  }
+
+  /* Backward compatibility for original #msg */
+  #msg { margin-bottom: 12px; }
+  .msg { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+  .msg.err { background: var(--danger-light); color: var(--danger-text); border: 1px solid var(--danger-border); }
+  .msg.ok { background: var(--success-light); color: var(--success-text); border: 1px solid var(--success-border); }
+
+  /* ---- Login Screen ---- */
+  #login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 180px);
+    padding: 24px;
+  }
+
+  #login {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 36px 32px;
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(16px);
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .login-badge-icon {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 16px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+  }
+
+  .login-badge-icon svg { width: 28px; height: 28px; }
+
+  .login-header h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-main);
+  }
+
+  .login-header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .form-field {
+    margin-bottom: 16px;
+  }
+
+  .form-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 6px;
+  }
+
+  .form-field input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .demo-creds-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg-subtle);
+    border: 1px dashed var(--border-hover);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .demo-creds-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 9999px;
+    border: none;
+    font-weight: 700;
+  }
+  .demo-creds-btn:hover {
+    background: #e0e7ff;
+    transform: none;
+  }
+
+  /* ---- Modal Dialog ---- */
+  .modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  .modal-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 480px;
+    padding: 28px;
+    box-shadow: var(--shadow-xl);
+    animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modal-pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .modal-close-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 4px;
+    box-shadow: none;
+  }
+
+  .modal-close-btn:hover {
+    color: var(--text-main);
+    background: var(--bg-subtle);
+    transform: none;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  /* ---- Empty States ---- */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+
+  .empty-state-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-subtle);
+  }
+
+  .empty-state-icon svg { width: 28px; height: 28px; }
+  .empty-state h3 { font-family: var(--font-heading); font-size: 16px; color: var(--text-main); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; max-width: 320px; margin: 0 auto; }
+
+  /* Utility classes */
+  .hidden { display: none !important; }
+  .flex-1 { flex: 1; }
+  .w-full { width: 100%; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    header { padding: 12px 16px; }
+    main { padding: 0 16px; margin: 16px auto; }
+    .header-actions .health-pill { display: none; }
+    .card { padding: 18px 16px; }
+    .row { flex-direction: column; align-items: stretch; }
+    .row input, .row select, .row button { width: 100%; }
+    .status-segmented-group { width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .status-pill-label { justify-content: center; padding: 8px 4px; font-size: 12px; }
+    .stat-card { padding: 14px 16px; }
+  }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>Student Attendance Manager</h1>
-  <div id="userbox" class="hidden"><span id="uname"></span> <button class="secondary" onclick="logout()">Logout</button></div>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-logo">
+        <!-- Graduation Cap SVG -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>EduAttend</h1>
+        <span class="badge">Faculty Portal</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="health-pill" id="healthPill" title="Backend API and Database Status">
+        <span class="health-dot" id="healthDot"></span>
+        <span id="healthText">Checking health...</span>
+      </div>
+
+      <div id="userbox" class="hidden">
+        <div class="user-badge">
+          <div class="user-avatar" id="uavatar">T</div>
+          <span id="uname"></span>
+        </div>
+        <button class="secondary" onclick="logout()" title="Sign out of the system" style="padding: 7px 12px; font-size: 13px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
 </header>
 
-<div id="login" class="card">
-  <h2>Teacher Login</h2>
-  <div id="loginMsg"></div>
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()" style="width:100%">Login</button>
+<!-- LOGIN VIEW -->
+<div id="login-wrapper">
+  <div id="login" class="card">
+    <div class="login-header">
+      <div class="login-badge-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2>Teacher Sign In</h2>
+      <p>Enter your credentials to record and manage student attendance.</p>
+    </div>
+
+    <div id="loginMsg"></div>
+
+    <div class="demo-creds-chip">
+      <div>
+        <strong>Default Admin:</strong><br>
+        <span style="font-family: var(--font-mono)">admin@example.com</span>
+      </div>
+      <button type="button" class="demo-creds-btn" onclick="fillDemoCreds()">Use Demo</button>
+    </div>
+
+    <form onsubmit="event.preventDefault(); login();">
+      <div class="form-field">
+        <label for="email">Email Address</label>
+        <div class="input-group">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input id="email" type="email" placeholder="e.g. teacher@school.edu" required autocomplete="username">
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="password">Password</label>
+        <div class="input-group">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input id="password" type="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+      </div>
+
+      <button id="loginBtn" type="submit" class="w-full" style="padding: 12px; margin-top: 10px;">
+        <span id="loginBtnText">Sign In to Dashboard</span>
+      </button>
+    </form>
+  </div>
 </div>
 
+<!-- MAIN DASHBOARD -->
 <main id="app" class="hidden">
+  <!-- Top Stat Overview Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value" id="statStudentCount">0</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Active Subjects</div>
+        <div class="stat-value" id="statSubjectCount">0</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon amber">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Avg Attendance</div>
+        <div class="stat-value" id="statAvgAttendance">--%</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon rose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">At-Risk (&lt;75%)</div>
+        <div class="stat-value" id="statAtRiskCount">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
   <nav>
-    <button data-tab="students" class="active">Students</button>
-    <button data-tab="attendance">Mark Attendance</button>
-    <button data-tab="reports">Reports</button>
+    <button data-tab="students" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+      </svg>
+      Student Directory
+    </button>
+    <button data-tab="attendance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Mark Attendance
+    </button>
+    <button data-tab="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      Reports & Analytics
+    </button>
   </nav>
+
+  <!-- Legacy container for backward-compatible alerts -->
   <div id="msg"></div>
 
+  <!-- ================= TAB 1: STUDENTS ================= -->
   <section id="tab-students" class="card">
-    <div class="row">
-      <input id="s_roll" placeholder="Roll No"><input id="s_name" placeholder="Name"><input id="s_class" placeholder="Class">
-      <button onclick="addStudent()">Add Student</button>
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Student Roster
+        </h2>
+        <p class="card-subtitle">Manage enrolled students, roll numbers, and assigned classrooms.</p>
+      </div>
+      <div class="input-group" style="min-width: 240px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="studentSearch" placeholder="Search students..." oninput="filterStudentTable()">
+      </div>
     </div>
-    <table><thead><tr><th>Roll No</th><th>Name</th><th>Class</th><th></th></tr></thead><tbody id="studentRows"></tbody></table>
+
+    <!-- Quick Add Student Form -->
+    <div class="row" style="background: var(--bg-subtle); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-weight: 700; font-size: 13px; color: var(--text-main); margin-right: 6px;">Enroll Student:</div>
+      <input id="s_roll" placeholder="Roll No (e.g. 101)" style="flex: 1; min-width: 120px;">
+      <input id="s_name" placeholder="Full Name (e.g. Jane Doe)" style="flex: 1.5; min-width: 160px;">
+      <input id="s_class" placeholder="Class / Section (e.g. Grade 10-A)" style="flex: 1; min-width: 140px;">
+      <button onclick="addStudent()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Student
+      </button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 120px;">Roll No</th>
+            <th>Student Name</th>
+            <th style="width: 180px;">Class</th>
+            <th style="width: 140px; text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentRows"></tbody>
+      </table>
+    </div>
   </section>
 
+  <!-- ================= TAB 2: MARK ATTENDANCE ================= -->
   <section id="tab-attendance" class="card hidden">
-    <div class="row">
-      <select id="a_subject"></select>
-      <input id="a_newSubject" placeholder="New subject"><button class="secondary" onclick="addSubject()">Add Subject</button>
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          Daily Attendance Sheet
+        </h2>
+        <p class="card-subtitle">Select a subject and date to record present, late, or absent status.</p>
+      </div>
+
+      <!-- Quick Subject Creator -->
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input id="a_newSubject" placeholder="New subject name" style="width: 170px;">
+        <button class="secondary" onclick="addSubject()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Subject
+        </button>
+      </div>
     </div>
-    <div class="row">
-      <input id="a_date" type="date"><button onclick="loadAttendance()">Load</button>
-      <button class="secondary" onclick="markAll('present')">All Present</button>
-      <button onclick="saveAttendance()">Save Attendance</button>
+
+    <!-- Attendance Filters & Actions -->
+    <div class="row" style="background: var(--bg-subtle); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 16px;">
+      <div class="input-group" style="flex: 1; min-width: 180px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <select id="a_subject" style="width: 100%; padding-left: 36px;"></select>
+      </div>
+
+      <div class="input-group" style="flex: 1; min-width: 160px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <input id="a_date" type="date" style="width: 100%; padding-left: 36px;">
+      </div>
+
+      <button onclick="loadAttendance()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        Load Records
+      </button>
+
+      <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="secondary" onclick="markAll('present')" title="Set all students to Present">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          All Present
+        </button>
+        <button class="secondary" onclick="markAll('absent')" title="Set all students to Absent">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          All Absent
+        </button>
+        <button class="success-action" onclick="saveAttendance()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save Attendance
+        </button>
+      </div>
     </div>
-    <table><thead><tr><th>Roll No</th><th>Name</th><th>Status</th></tr></thead><tbody id="attRows"></tbody></table>
+
+    <!-- Real-time Progress & Status Counter Bar -->
+    <div class="attendance-tracker-bar" id="attendanceTrackerBar">
+      <div class="tracker-counters">
+        <span>Marked: <strong id="trackerMarkedCount">0</strong> / <span id="trackerTotalCount">0</span></span>
+        <span class="count-pill count-present">✔ <span id="trackerPresentCount">0</span> Present</span>
+        <span class="count-pill count-late">⏱ <span id="trackerLateCount">0</span> Late</span>
+        <span class="count-pill count-absent">✖ <span id="trackerAbsentCount">0</span> Absent</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" id="trackerPercentLabel">0% Done</span>
+        <div class="progress-track">
+          <div class="progress-fill" id="trackerProgressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 120px;">Roll No</th>
+            <th>Student Name & Class</th>
+            <th style="text-align: right; width: 320px;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="attRows"></tbody>
+      </table>
+    </div>
   </section>
 
+  <!-- ================= TAB 3: REPORTS ================= -->
   <section id="tab-reports" class="card hidden">
-    <div class="row">
-      <select id="r_subject"></select>
-      <input id="r_from" type="date"><input id="r_to" type="date">
-      <button onclick="loadReport()">Generate</button>
-      <button class="secondary" onclick="exportCsv()">Export CSV</button>
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+          </svg>
+          Attendance Performance & Insights
+        </h2>
+        <p class="card-subtitle">Generate student-wise attendance percentages, low attendance alerts, and export audit sheets.</p>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="secondary" onclick="exportCsv()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export CSV
+        </button>
+      </div>
     </div>
-    <p id="threshold" style="color:var(--muted)"></p>
-    <table><thead><tr><th>Roll No</th><th>Name</th><th>Present</th><th>Late</th><th>Absent</th><th>Total</th><th>%</th></tr></thead><tbody id="reportRows"></tbody></table>
+
+    <!-- Report Filters -->
+    <div class="row" style="background: var(--bg-subtle); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div class="input-group" style="flex: 1.5; min-width: 180px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <select id="r_subject" style="width: 100%; padding-left: 36px;"></select>
+      </div>
+
+      <div class="input-group" style="flex: 1; min-width: 150px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+        </svg>
+        <input id="r_from" type="date" title="Start date" style="width: 100%; padding-left: 36px;">
+      </div>
+
+      <div class="input-group" style="flex: 1; min-width: 150px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+        </svg>
+        <input id="r_to" type="date" title="End date" style="width: 100%; padding-left: 36px;">
+      </div>
+
+      <button onclick="loadReport()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Generate Report
+      </button>
+
+      <button class="secondary" id="toggleAtRiskBtn" onclick="toggleAtRiskFilter()">
+        Filter At-Risk Only
+      </button>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+      <p id="threshold" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"></p>
+      <span style="font-size: 12px; color: var(--text-subtle);">Late records count as attended.</span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 110px;">Roll No</th>
+            <th>Name</th>
+            <th style="width: 100px;">Present</th>
+            <th style="width: 90px;">Late</th>
+            <th style="width: 90px;">Absent</th>
+            <th style="width: 90px;">Total</th>
+            <th style="width: 130px; text-align: right;">Attendance %</th>
+          </tr>
+        </thead>
+        <tbody id="reportRows"></tbody>
+      </table>
+    </div>
   </section>
 </main>
+
+<!-- EDIT STUDENT MODAL -->
+<div id="editStudentModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Student Details</h3>
+      <button class="modal-close-btn" onclick="closeEditModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form onsubmit="event.preventDefault(); submitEditStudent();">
+      <input type="hidden" id="edit_id">
+      <div class="form-field">
+        <label for="edit_roll">Roll Number</label>
+        <input id="edit_roll" required>
+      </div>
+      <div class="form-field">
+        <label for="edit_name">Full Name</label>
+        <input id="edit_name" required>
+      </div>
+      <div class="form-field">
+        <label for="edit_class">Class / Section</label>
+        <input id="edit_class">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" onclick="closeEditModal()">Cancel</button>
+        <button type="submit">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div id="toast-container"></div>
+
+<footer>
+  Student Attendance Management System &bull; Powered by Express, PostgreSQL, Prometheus &amp; AWS Infrastructure
+</footer>
 
 <script>
 let token = localStorage.getItem('token');
 let attendanceData = [];
+let allStudentsCache = [];
+let allReportsCache = [];
+let atRiskOnlyFilter = false;
+
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+// Initial health check
+async function checkSystemHealth() {
+  const dot = $('healthDot');
+  const text = $('healthText');
+  try {
+    const res = await fetch('/health');
+    if (res.ok) {
+      dot.style.backgroundColor = 'var(--success)';
+      text.textContent = 'API & DB Online';
+    } else {
+      dot.style.backgroundColor = 'var(--warning)';
+      text.textContent = 'DB Degraded';
+    }
+  } catch (e) {
+    dot.style.backgroundColor = 'var(--danger)';
+    text.textContent = 'Offline';
+  }
+}
+checkSystemHealth();
+setInterval(checkSystemHealth, 20000);
+
+/* ---- Toast Notification System ---- */
+function flash(text, ok = true) {
+  // Update legacy element for full test and ID compatibility
+  if ($('msg')) {
+    $('msg').innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${esc(text)}</div>`;
+    setTimeout(() => { if ($('msg')) $('msg').innerHTML = ''; }, 4000);
+  }
+
+  // Render modern floating toast
+  const container = $('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${ok ? 'ok' : 'err'}`;
+  toast.innerHTML = `
+    <div class="toast-icon">
+      ${ok 
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+      }
+    </div>
+    <div style="flex:1;">${esc(text)}</div>
+  `;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = 'toast-out 0.25s forwards cubic-bezier(0.16, 1, 0.3, 1)';
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
+}
+
+const guard = (fn) => async (...a) => {
+  try {
+    await fn(...a);
+  } catch (e) {
+    flash(e.message, false);
+  }
+};
+
+/* ---- Core API Client ---- */
 async function api(path, opts = {}) {
   const res = await fetch('/api' + path, {
     ...opts,
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token, ...(opts.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+      ...(opts.headers || {}),
+    },
   });
-  if (res.status === 401 && path !== '/auth/login') { logout(); throw new Error('Session expired'); }
+  if (res.status === 401 && path !== '/auth/login') {
+    logout();
+    throw new Error('Session expired');
+  }
   if (res.status === 204) return null;
   const data = res.headers.get('content-type')?.includes('json') ? await res.json() : res;
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
 
-function flash(text, ok = true) {
-  $('msg').innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${esc(text)}</div>`;
-  setTimeout(() => ($('msg').innerHTML = ''), 4000);
+/* ---- Quick Demo Credentials Helper ---- */
+function fillDemoCreds() {
+  $('email').value = 'admin@example.com';
+  $('password').value = 'changeme123';
+  $('email').focus();
 }
-const guard = (fn) => async (...a) => { try { await fn(...a); } catch (e) { flash(e.message, false); } };
 
-/* ---- Auth ---- */
+/* ---- Auth Flow ---- */
 async function login() {
+  const btn = $('loginBtn');
+  const btnText = $('loginBtnText');
   try {
-    const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email: $('email').value, password: $('password').value }) });
-    token = data.token; localStorage.setItem('token', token); localStorage.setItem('name', data.name);
+    btn.disabled = true;
+    btnText.textContent = 'Authenticating...';
+    $('loginMsg').innerHTML = '';
+
+    const data = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: $('email').value, password: $('password').value }),
+    });
+
+    token = data.token;
+    localStorage.setItem('token', token);
+    localStorage.setItem('name', data.name || 'Teacher');
     showApp();
-  } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
-}
-function logout() { localStorage.clear(); token = null; location.reload(); }
-function showApp() {
-  $('login').classList.add('hidden'); $('app').classList.remove('hidden');
-  $('userbox').classList.remove('hidden'); $('uname').textContent = localStorage.getItem('name') || '';
-  $('a_date').value = new Date().toISOString().slice(0, 10);
-  loadStudents(); loadSubjects();
+    flash(`Welcome back, ${data.name || 'Educator'}!`);
+  } catch (e) {
+    $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+    flash(e.message, false);
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'Sign In to Dashboard';
+  }
 }
 
-/* ---- Tabs ---- */
-document.querySelectorAll('nav button').forEach((b) => b.onclick = () => {
-  document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x === b));
-  ['students', 'attendance', 'reports'].forEach((t) => $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab));
+function logout() {
+  localStorage.clear();
+  token = null;
+  location.reload();
+}
+
+function showApp() {
+  $('login-wrapper').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('userbox').classList.remove('hidden');
+
+  const teacherName = localStorage.getItem('name') || 'Teacher';
+  $('uname').textContent = teacherName;
+  $('uavatar').textContent = teacherName.charAt(0).toUpperCase();
+
+  // Set today's date
+  $('a_date').value = new Date().toISOString().slice(0, 10);
+  $('r_from').value = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  $('r_to').value = new Date().toISOString().slice(0, 10);
+
+  loadStudents();
+  loadSubjects();
+  loadReport();
+}
+
+/* ---- Navigation Tabs ---- */
+document.querySelectorAll('nav button').forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x === b));
+    ['students', 'attendance', 'reports'].forEach((t) => {
+      $('tab-' + t).classList.toggle('hidden', t !== b.dataset.tab);
+    });
+    if (b.dataset.tab === 'reports' && allReportsCache.length === 0) {
+      loadReport();
+    }
+  };
 });
 
-/* ---- Students ---- */
+/* ---- Students Management ---- */
 const loadStudents = guard(async () => {
   const rows = await api('/students');
-  $('studentRows').innerHTML = rows.map((s) => `<tr><td>${esc(s.roll_no)}</td><td>${esc(s.name)}</td><td>${esc(s.class_name)}</td>
-    <td><button class="danger" onclick="delStudent(${s.id})">Delete</button></td></tr>`).join('');
-});
-const addStudent = guard(async () => {
-  await api('/students', { method: 'POST', body: JSON.stringify({ roll_no: $('s_roll').value, name: $('s_name').value, class_name: $('s_class').value }) });
-  ['s_roll', 's_name', 's_class'].forEach((i) => ($(i).value = ''));
-  flash('Student added'); loadStudents();
-});
-const delStudent = guard(async (id) => {
-  if (!confirm('Delete this student and their attendance records?')) return;
-  await api('/students/' + id, { method: 'DELETE' }); loadStudents();
+  allStudentsCache = rows;
+  $('statStudentCount').textContent = rows.length;
+  renderStudentsTable(rows);
 });
 
-/* ---- Subjects ---- */
+function renderStudentsTable(rows) {
+  if (rows.length === 0) {
+    $('studentRows').innerHTML = `
+      <tr>
+        <td colspan="4">
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <h3>No Students Found</h3>
+            <p>Enroll new students using the form above to begin tracking their attendance.</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  $('studentRows').innerHTML = rows.map((s) => `
+    <tr>
+      <td><span class="roll-badge">${esc(s.roll_no)}</span></td>
+      <td>
+        <div class="student-name-cell">
+          <div class="student-initials">${esc(s.name.charAt(0).toUpperCase())}</div>
+          <span style="font-weight: 600;">${esc(s.name)}</span>
+        </div>
+      </td>
+      <td><span class="class-pill">${esc(s.class_name || 'Standard')}</span></td>
+      <td style="text-align: right;">
+        <div style="display: inline-flex; gap: 6px;">
+          <button class="secondary" style="padding: 6px 10px; font-size: 12px;" onclick="openEditModal(${s.id}, '${esc(s.roll_no)}', '${esc(s.name)}', '${esc(s.class_name || '')}')" title="Edit Student">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            Edit
+          </button>
+          <button class="danger" style="padding: 6px 10px; font-size: 12px;" onclick="delStudent(${s.id})" title="Delete Student">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterStudentTable() {
+  const query = ($('studentSearch').value || '').toLowerCase().trim();
+  if (!query) {
+    renderStudentsTable(allStudentsCache);
+    return;
+  }
+  const filtered = allStudentsCache.filter((s) =>
+    (s.name || '').toLowerCase().includes(query) ||
+    (s.roll_no || '').toLowerCase().includes(query) ||
+    (s.class_name || '').toLowerCase().includes(query)
+  );
+  renderStudentsTable(filtered);
+}
+
+const addStudent = guard(async () => {
+  const roll = $('s_roll').value.trim();
+  const name = $('s_name').value.trim();
+  const className = $('s_class').value.trim();
+
+  if (!roll || !name) {
+    return flash('Roll No and Name are required', false);
+  }
+
+  await api('/students', {
+    method: 'POST',
+    body: JSON.stringify({ roll_no: roll, name: name, class_name: className }),
+  });
+
+  ['s_roll', 's_name', 's_class'].forEach((i) => ($(i).value = ''));
+  flash(`Student "${name}" successfully enrolled`);
+  loadStudents();
+});
+
+const delStudent = guard(async (id) => {
+  if (!confirm('Are you sure you want to delete this student and their entire attendance history?')) return;
+  await api('/students/' + id, { method: 'DELETE' });
+  flash('Student record removed');
+  loadStudents();
+  if (attendanceData.length) loadAttendance();
+});
+
+/* ---- Edit Student Modal (Interacting with PUT /api/students/:id) ---- */
+function openEditModal(id, roll, name, className) {
+  $('edit_id').value = id;
+  $('edit_roll').value = roll;
+  $('edit_name').value = name;
+  $('edit_class').value = className;
+  $('editStudentModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  $('editStudentModal').classList.add('hidden');
+}
+
+const submitEditStudent = guard(async () => {
+  const id = $('edit_id').value;
+  const roll = $('edit_roll').value.trim();
+  const name = $('edit_name').value.trim();
+  const className = $('edit_class').value.trim();
+
+  await api('/students/' + id, {
+    method: 'PUT',
+    body: JSON.stringify({ roll_no: roll, name: name, class_name: className }),
+  });
+
+  closeEditModal();
+  flash('Student details updated');
+  loadStudents();
+});
+
+/* ---- Subjects Management ---- */
 const loadSubjects = guard(async () => {
   const subjects = await api('/subjects');
+  $('statSubjectCount').textContent = subjects.length;
+
   const opts = subjects.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
   $('a_subject').innerHTML = opts;
-  $('r_subject').innerHTML = '<option value="">All subjects</option>' + opts;
+  $('r_subject').innerHTML = '<option value="">All Subjects (Cumulative)</option>' + opts;
+
+  // Auto load attendance if subjects exist
+  if (subjects.length && $('tab-attendance').classList.contains('hidden') === false) {
+    loadAttendance();
+  }
 });
+
 const addSubject = guard(async () => {
-  await api('/subjects', { method: 'POST', body: JSON.stringify({ name: $('a_newSubject').value }) });
-  $('a_newSubject').value = ''; loadSubjects();
+  const name = $('a_newSubject').value.trim();
+  if (!name) return flash('Please provide a subject name', false);
+
+  await api('/subjects', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+
+  $('a_newSubject').value = '';
+  flash(`Subject "${name}" added`);
+  loadSubjects();
 });
 
-/* ---- Attendance ---- */
+/* ---- Attendance Entry & Real-time Tracker ---- */
 const loadAttendance = guard(async () => {
-  const subject = $('a_subject').value, date = $('a_date').value;
-  if (!subject) return flash('Add and select a subject first', false);
+  const subject = $('a_subject').value;
+  const date = $('a_date').value;
+
+  if (!subject) return flash('Please create and select a subject first', false);
+  if (!date) return flash('Please select a valid date', false);
+
   attendanceData = await api(`/attendance?subject_id=${subject}&date=${date}`);
-  $('attRows').innerHTML = attendanceData.map((r, i) => `<tr><td>${esc(r.roll_no)}</td><td>${esc(r.name)}</td>
-    <td class="status">${['present', 'late', 'absent'].map((st) =>
-      `<label><input type="radio" name="st${i}" value="${st}" ${r.status === st ? 'checked' : ''}> ${st}</label>`).join('')}</td></tr>`).join('');
-});
-function markAll(status) { document.querySelectorAll(`#attRows input[value="${status}"]`).forEach((r) => (r.checked = true)); }
-const saveAttendance = guard(async () => {
-  const records = attendanceData.map((r, i) => {
-    const c = document.querySelector(`input[name="st${i}"]:checked`);
-    return c ? { student_id: r.student_id, status: c.value } : null;
-  }).filter(Boolean);
-  if (!records.length) return flash('Mark at least one student', false);
-  const out = await api('/attendance', { method: 'POST', body: JSON.stringify({ subject_id: $('a_subject').value, date: $('a_date').value, records }) });
-  flash(`Saved ${out.saved} records`);
+
+  if (attendanceData.length === 0) {
+    $('attRows').innerHTML = `
+      <tr>
+        <td colspan="3">
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h3>No Students In Class</h3>
+            <p>Go to the Student Directory tab to enroll students before recording attendance.</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    updateAttendanceTracker();
+    return;
+  }
+
+  $('attRows').innerHTML = attendanceData.map((r, i) => `
+    <tr>
+      <td><span class="roll-badge">${esc(r.roll_no)}</span></td>
+      <td>
+        <div class="student-name-cell">
+          <div class="student-initials">${esc(r.name.charAt(0).toUpperCase())}</div>
+          <div>
+            <div style="font-weight: 600;">${esc(r.name)}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">${esc(r.class_name || 'Standard')}</div>
+          </div>
+        </div>
+      </td>
+      <td style="text-align: right;">
+        <div class="status-segmented-group">
+          <label class="status-segmented-option">
+            <input type="radio" name="st${i}" value="present" ${r.status === 'present' ? 'checked' : ''} onchange="updateAttendanceTracker()">
+            <span class="status-pill-label">✔ Present</span>
+          </label>
+          <label class="status-segmented-option">
+            <input type="radio" name="st${i}" value="late" ${r.status === 'late' ? 'checked' : ''} onchange="updateAttendanceTracker()">
+            <span class="status-pill-label">⏱ Late</span>
+          </label>
+          <label class="status-segmented-option">
+            <input type="radio" name="st${i}" value="absent" ${r.status === 'absent' ? 'checked' : ''} onchange="updateAttendanceTracker()">
+            <span class="status-pill-label">✖ Absent</span>
+          </label>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  updateAttendanceTracker();
 });
 
-/* ---- Reports ---- */
+function markAll(status) {
+  document.querySelectorAll(`#attRows input[value="${status}"]`).forEach((r) => {
+    r.checked = true;
+  });
+  updateAttendanceTracker();
+  flash(`All students set to ${status.toUpperCase()}`);
+}
+
+function updateAttendanceTracker() {
+  const total = attendanceData.length;
+  let present = 0, late = 0, absent = 0, marked = 0;
+
+  attendanceData.forEach((_, i) => {
+    const selected = document.querySelector(`input[name="st${i}"]:checked`);
+    if (selected) {
+      marked++;
+      if (selected.value === 'present') present++;
+      if (selected.value === 'late') late++;
+      if (selected.value === 'absent') absent++;
+    }
+  });
+
+  $('trackerTotalCount').textContent = total;
+  $('trackerMarkedCount').textContent = marked;
+  $('trackerPresentCount').textContent = present;
+  $('trackerLateCount').textContent = late;
+  $('trackerAbsentCount').textContent = absent;
+
+  const percent = total > 0 ? Math.round((marked / total) * 100) : 0;
+  $('trackerPercentLabel').textContent = `${percent}% Marked`;
+  $('trackerProgressFill').style.width = `${percent}%`;
+}
+
+const saveAttendance = guard(async () => {
+  const records = attendanceData
+    .map((r, i) => {
+      const c = document.querySelector(`input[name="st${i}"]:checked`);
+      return c ? { student_id: r.student_id, status: c.value } : null;
+    })
+    .filter(Boolean);
+
+  if (!records.length) return flash('Please mark at least one student before saving', false);
+
+  const out = await api('/attendance', {
+    method: 'POST',
+    body: JSON.stringify({
+      subject_id: $('a_subject').value,
+      date: $('a_date').value,
+      records,
+    }),
+  });
+
+  flash(`Successfully saved ${out.saved} attendance records`);
+  loadReport(); // keep reports in sync
+});
+
+/* ---- Reports & Analytics ---- */
 function reportQuery() {
   const p = new URLSearchParams();
   if ($('r_subject').value) p.set('subject_id', $('r_subject').value);
@@ -190,20 +1905,112 @@ function reportQuery() {
   if ($('r_to').value) p.set('to', $('r_to').value);
   return p.toString();
 }
+
 const loadReport = guard(async () => {
   const data = await api('/reports/students?' + reportQuery());
-  $('threshold').textContent = `Students below ${data.threshold}% are highlighted in red.`;
-  $('reportRows').innerHTML = data.students.map((s) => `<tr class="${s.low ? 'low' : ''}">
-    <td>${esc(s.roll_no)}</td><td>${esc(s.name)}</td><td>${s.present}</td><td>${s.late}</td><td>${s.absent}</td><td>${s.total}</td>
-    <td class="${s.low ? 'low-text' : ''}">${s.percentage === null ? 'N/A' : s.percentage + '%'}</td></tr>`).join('');
+  allReportsCache = data.students || [];
+
+  $('threshold').innerHTML = `
+    <strong>Threshold:</strong> Students with attendance below <span style="color:var(--danger);font-weight:700;">${data.threshold}%</span> are marked as <span class="percentage-badge low" style="padding:2px 8px;font-size:11px;">At Risk</span>.
+  `;
+
+  // Compute summary metrics for top cards
+  const atRiskCount = allReportsCache.filter((s) => s.low).length;
+  $('statAtRiskCount').textContent = atRiskCount;
+
+  const withAttendance = allReportsCache.filter((s) => s.percentage !== null);
+  if (withAttendance.length > 0) {
+    const sum = withAttendance.reduce((acc, s) => acc + Number(s.percentage), 0);
+    const avg = (sum / withAttendance.length).toFixed(1);
+    $('statAvgAttendance').textContent = `${avg}%`;
+  } else {
+    $('statAvgAttendance').textContent = 'N/A';
+  }
+
+  renderReportRows();
 });
+
+function toggleAtRiskFilter() {
+  atRiskOnlyFilter = !atRiskOnlyFilter;
+  const btn = $('toggleAtRiskBtn');
+  if (atRiskOnlyFilter) {
+    btn.classList.add('danger');
+    btn.classList.remove('secondary');
+    btn.textContent = 'Showing At-Risk Only (Clear)';
+  } else {
+    btn.classList.remove('danger');
+    btn.classList.add('secondary');
+    btn.textContent = 'Filter At-Risk Only';
+  }
+  renderReportRows();
+}
+
+function renderReportRows() {
+  let list = allReportsCache;
+  if (atRiskOnlyFilter) {
+    list = list.filter((s) => s.low);
+  }
+
+  if (list.length === 0) {
+    $('reportRows').innerHTML = `
+      <tr>
+        <td colspan="7">
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <h3>${atRiskOnlyFilter ? 'No At-Risk Students' : 'No Attendance Records Found'}</h3>
+            <p>${atRiskOnlyFilter ? 'All students currently maintain satisfactory attendance above the threshold.' : 'Record attendance in the Mark Attendance tab to generate comprehensive analytics.'}</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  $('reportRows').innerHTML = list.map((s) => `
+    <tr class="${s.low ? 'low' : ''}">
+      <td><span class="roll-badge">${esc(s.roll_no)}</span></td>
+      <td>
+        <div class="student-name-cell">
+          <div class="student-initials" style="${s.low ? 'background:#fee2e2;color:#991b1b;' : ''}">${esc(s.name.charAt(0).toUpperCase())}</div>
+          <div>
+            <div style="font-weight: 600;">${esc(s.name)}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">${esc(s.class_name || 'Standard')}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="count-pill count-present">${s.present}</span></td>
+      <td><span class="count-pill count-late">${s.late}</span></td>
+      <td><span class="count-pill count-absent">${s.absent}</span></td>
+      <td><strong style="color:var(--text-main);">${s.total}</strong></td>
+      <td style="text-align: right;">
+        <span class="percentage-badge ${s.low ? 'low' : ''}">
+          ${s.percentage === null ? 'No Data' : s.percentage + '%'}
+          ${s.low ? '⚠️ At Risk' : '✔ Normal'}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+}
+
 const exportCsv = guard(async () => {
   const res = await api('/reports/export.csv?' + reportQuery());
   const url = URL.createObjectURL(await res.blob());
-  const a = Object.assign(document.createElement('a'), { href: url, download: 'attendance-report.csv' });
-  a.click(); URL.revokeObjectURL(url);
+  const a = Object.assign(document.createElement('a'), {
+    href: url,
+    download: `attendance-report-${new Date().toISOString().slice(0, 10)}.csv`,
+  });
+  a.click();
+  URL.revokeObjectURL(url);
+  flash('CSV report downloaded successfully');
 });
 
+// Auto login if token exists in session
 if (token) showApp();
 </script>
 </body>
