@@ -11,3 +11,8 @@ variable "secret_arns" {
   description = "Secrets the servers may read"
   type        = list(string)
 }
+
+variable "artifacts_bucket_arn" {
+  description = "Bucket holding the Ansible playbooks (read-only access)"
+  type        = string
+}

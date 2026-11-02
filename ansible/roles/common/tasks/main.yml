@@ -1,0 +1,15 @@
+---
+- name: Install base packages
+  ansible.builtin.dnf:
+    name:
+      - docker
+      - jq
+      - tar
+      - gzip
+    state: present
+
+- name: Enable and start Docker
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

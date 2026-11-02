@@ -34,11 +34,8 @@ resource "aws_launch_template" "app" {
   }
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh.tftpl", {
-    region         = var.region
-    registry       = split("/", var.ecr_repository_url)[0]
-    image          = "${var.ecr_repository_url}:${var.image_tag}"
-    db_secret_arn  = var.db_secret_arn
-    app_secret_arn = var.app_secret_arn
+    region           = var.region
+    artifacts_bucket = var.artifacts_bucket
   }))
 
   tag_specifications {

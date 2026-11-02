@@ -44,3 +44,11 @@ output "app_url" {
   description = "Open this in a browser once the instances are healthy"
   value       = "http://${module.alb.dns_name}"
 }
+
+output "artifacts_bucket" {
+  value = data.aws_s3_bucket.artifacts.id
+}
+
+output "ansible_document" {
+  value = module.config_management.document_name
+}

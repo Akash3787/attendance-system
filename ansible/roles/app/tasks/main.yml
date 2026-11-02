@@ -1,0 +1,69 @@
+---
+# Runs the app container as a systemd service. Secrets come from AWS Secrets
+# Manager at configuration time; nothing sensitive is stored in this repository.
+- name: Create config directory
+  ansible.builtin.file:
+    path: /etc/attendance
+    state: directory
+    mode: "0700"
+
+- name: Read database secret
+  ansible.builtin.command: >
+    aws secretsmanager get-secret-value --region {{ region }}
+    --secret-id {{ db_secret_arn }} --query SecretString --output text
+  register: db_secret_raw
+  changed_when: false
+  no_log: true
+
+- name: Read application secret
+  ansible.builtin.command: >
+    aws secretsmanager get-secret-value --region {{ region }}
+    --secret-id {{ app_secret_arn }} --query SecretString --output text
+  register: app_secret_raw
+  changed_when: false
+  no_log: true
+
+- name: Parse secrets
+  ansible.builtin.set_fact:
+    db_cfg: "{{ db_secret_raw.stdout | from_json }}"
+    app_cfg: "{{ app_secret_raw.stdout | from_json }}"
+  no_log: true
+
+- name: Write environment file
+  ansible.builtin.template:
+    src: app.env.j2
+    dest: /etc/attendance/app.env
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Restart attendance
+
+- name: Log in to ECR
+  ansible.builtin.shell: >
+    set -o pipefail;
+    aws ecr get-login-password --region {{ region }} |
+    docker login --username AWS --password-stdin {{ registry }}
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Pull application image
+  ansible.builtin.command: "docker pull {{ image }}"
+  register: image_pull
+  changed_when: "'Downloaded newer image' in image_pull.stdout"
+  notify: Restart attendance
+
+- name: Install systemd unit
+  ansible.builtin.template:
+    src: attendance.service.j2
+    dest: /etc/systemd/system/attendance.service
+    mode: "0644"
+  notify: Restart attendance
+
+- name: Enable and start the application
+  ansible.builtin.systemd:
+    name: attendance
+    enabled: true
+    state: started
+    daemon_reload: true

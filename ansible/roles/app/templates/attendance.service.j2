@@ -1,0 +1,14 @@
+[Unit]
+Description=Attendance app container
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm -f attendance
+ExecStart=/usr/bin/docker run --rm --name attendance -p 3000:3000 --env-file /etc/attendance/app.env {{ image }}
+ExecStop=/usr/bin/docker stop attendance
+
+[Install]
+WantedBy=multi-user.target

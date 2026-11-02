@@ -23,23 +23,6 @@ variable "target_group_arn" {
   type = string
 }
 
-variable "ecr_repository_url" {
-  type = string
-}
-
-variable "image_tag" {
-  type    = string
-  default = "latest"
-}
-
-variable "db_secret_arn" {
-  type = string
-}
-
-variable "app_secret_arn" {
-  type = string
-}
-
 variable "instance_type" {
   type    = string
   default = "t3.micro"
@@ -58,4 +41,9 @@ variable "desired_size" {
 variable "max_size" {
   type    = number
   default = 3
+}
+
+variable "artifacts_bucket" {
+  description = "Bucket holding the Ansible playbooks"
+  type        = string
 }

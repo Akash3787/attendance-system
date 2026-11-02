@@ -1,0 +1,10 @@
+---
+# Configures an app server. Runs on the instance itself (local connection),
+# started either at first boot (user data) or by AWS Systems Manager.
+- name: Configure attendance app server
+  hosts: all
+  become: false   # already running as root
+  roles:
+    - common
+    - node_exporter
+    - app

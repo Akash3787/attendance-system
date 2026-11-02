@@ -1,0 +1,4 @@
+---
+image_tag: latest
+registry: "{{ ecr_repository_url.split('/')[0] }}"
+image: "{{ ecr_repository_url }}:{{ image_tag }}"

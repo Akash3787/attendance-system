@@ -55,6 +55,13 @@ data "aws_ecr_repository" "app" {
   name = var.ecr_repository_name
 }
 
+data "aws_caller_identity" "current" {}
+
+# Created by infra/bootstrap; holds the Ansible playbooks
+data "aws_s3_bucket" "artifacts" {
+  bucket = "attendance-artifacts-${data.aws_caller_identity.current.account_id}-${var.region}"
+}
+
 module "app_secrets" {
   source = "./modules/app_secrets"
 
@@ -65,8 +72,9 @@ module "app_secrets" {
 module "iam" {
   source = "./modules/iam"
 
-  name               = var.project
-  ecr_repository_arn = data.aws_ecr_repository.app.arn
+  name                 = var.project
+  ecr_repository_arn   = data.aws_ecr_repository.app.arn
+  artifacts_bucket_arn = data.aws_s3_bucket.artifacts.arn
   secret_arns = [
     module.database.secret_arn,
     module.app_secrets.secret_arn,
@@ -82,6 +90,17 @@ module "alb" {
   alb_sg_id         = module.network.alb_sg_id
 }
 
+module "config_management" {
+  source = "./modules/config_management"
+
+  name               = var.project
+  region             = var.region
+  artifacts_bucket   = data.aws_s3_bucket.artifacts.id
+  ecr_repository_url = data.aws_ecr_repository.app.repository_url
+  db_secret_arn      = module.database.secret_arn
+  app_secret_arn     = module.app_secrets.secret_arn
+}
+
 module "compute" {
   source = "./modules/compute"
 
@@ -91,12 +110,13 @@ module "compute" {
   app_sg_id             = module.network.app_sg_id
   instance_profile_name = module.iam.instance_profile_name
   target_group_arn      = module.alb.target_group_arn
-  ecr_repository_url    = data.aws_ecr_repository.app.repository_url
-  db_secret_arn         = module.database.secret_arn
-  app_secret_arn        = module.app_secrets.secret_arn
+  artifacts_bucket      = data.aws_s3_bucket.artifacts.id
 
   instance_type = var.instance_type
   min_size      = var.asg_min
   desired_size  = var.asg_desired
   max_size      = var.asg_max
+
+  # The playbook settings file must exist before servers boot
+  depends_on = [module.config_management]
 }

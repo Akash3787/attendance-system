@@ -1,42 +1,13 @@
 #!/bin/bash
-# Bootstraps an app server: installs Docker, reads secrets, starts the container.
-# (Phase 4 moves this configuration into Ansible.)
-# No "set -x" on purpose: it would write the secrets into the boot log.
+# First-boot bootstrap: all real configuration is done by Ansible.
+# (Systems Manager runs the same playbooks later for deployments and drift correction.)
 set -euo pipefail
 
-dnf install -y docker jq
-systemctl enable --now docker
+dnf install -y ansible-core
 
-REGION="${region}"
+mkdir -p /opt/ansible
+aws s3 sync "s3://${artifacts_bucket}/ansible/" /opt/ansible/ --exclude vars.yml --region "${region}"
+aws s3 cp "s3://${artifacts_bucket}/config/vars.yml" /opt/ansible/vars.yml --region "${region}"
 
-DB_SECRET=$(aws secretsmanager get-secret-value --region "$REGION" \
-  --secret-id "${db_secret_arn}" --query SecretString --output text)
-APP_SECRET=$(aws secretsmanager get-secret-value --region "$REGION" \
-  --secret-id "${app_secret_arn}" --query SecretString --output text)
-
-DB_USER=$(echo "$DB_SECRET" | jq -r .username)
-DB_PASS=$(echo "$DB_SECRET" | jq -r .password)
-DB_HOST=$(echo "$DB_SECRET" | jq -r .host)
-DB_PORT=$(echo "$DB_SECRET" | jq -r .port)
-DB_NAME=$(echo "$DB_SECRET" | jq -r .dbname)
-
-umask 077
-cat > /root/app.env <<ENVEOF
-PORT=3000
-DB_SSL=true
-LOW_ATTENDANCE_THRESHOLD=75
-DATABASE_URL=postgres://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME
-JWT_SECRET=$(echo "$APP_SECRET" | jq -r .jwt_secret)
-ADMIN_EMAIL=$(echo "$APP_SECRET" | jq -r .admin_email)
-ADMIN_NAME=$(echo "$APP_SECRET" | jq -r .admin_name)
-ADMIN_PASSWORD=$(echo "$APP_SECRET" | jq -r .admin_password)
-ENVEOF
-
-aws ecr get-login-password --region "$REGION" | \
-  docker login --username AWS --password-stdin "${registry}"
-docker pull "${image}"
-docker run -d --name attendance --restart unless-stopped \
-  -p 3000:3000 --env-file /root/app.env "${image}"
-
-# The container has its own copy of the settings, so remove the file from disk
-rm -f /root/app.env
+cd /opt/ansible
+ansible-playbook -i localhost, -c local site.yml -e @vars.yml

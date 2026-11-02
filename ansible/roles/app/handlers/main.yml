@@ -1,0 +1,6 @@
+---
+- name: Restart attendance
+  ansible.builtin.systemd:
+    name: attendance
+    state: restarted
+    daemon_reload: true

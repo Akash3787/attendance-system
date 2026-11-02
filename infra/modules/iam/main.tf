@@ -39,6 +39,18 @@ data "aws_iam_policy_document" "app" {
   }
 
   statement {
+    sid       = "ReadPlaybooks"
+    actions   = ["s3:GetObject"]
+    resources = ["${var.artifacts_bucket_arn}/*"]
+  }
+
+  statement {
+    sid       = "ListPlaybooks"
+    actions   = ["s3:ListBucket"]
+    resources = [var.artifacts_bucket_arn]
+  }
+
+  statement {
     sid       = "ReadAppSecrets"
     actions   = ["secretsmanager:GetSecretValue"]
     resources = var.secret_arns
